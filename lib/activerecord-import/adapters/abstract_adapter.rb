@@ -65,17 +65,17 @@ module ActiveRecord::Import::AbstractAdapter
       if NO_MAX_PACKET == max or total_bytes < max
         number_of_inserts += 1
         sql2insert = base_sql + values.join( ',' ) + post_sql
-        insert( sql2insert, *args )
+        results = select_all("#{sql2insert} RETURNING #{quote_column_name('id')}")        
       else
         value_sets = self.class.get_insert_value_sets( values, sql_size, max )
         value_sets.each do |values|
           number_of_inserts += 1
           sql2insert = base_sql + values.join( ',' ) + post_sql
-          insert( sql2insert, *args )
+          results = select_all("#{sql2insert} RETURNING #{quote_column_name('id')}")
         end
       end
-
-      number_of_inserts
+      clear_query_cache
+      results
     end
 
     def pre_sql_statements(options)
